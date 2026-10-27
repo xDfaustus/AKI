@@ -1,635 +1,561 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive KOF Fighting Game Showcase</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary-neon: #ffcc00;
-            --bg-dark: #0a0b10;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfil Interactivo - Redesign</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@700;800&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none;
-        }
+    :root {
+      --primary-red: #ff0033;
+      --dark-red: #800016;
+      --bg-dark: #080606;
+      --panel-bg: rgba(18, 12, 14, 0.88);
+      --text-white: #ffffff;
+      /* FONDO TRASERO PRINCIPAL */
+      --bg-image: url('https://i.ibb.co/0Rg0jLvr/dado-1.png');
+    }
 
-        body {
-            background-color: var(--bg-dark);
-            color: #fff;
-            font-family: 'Rajdhani', sans-serif;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            position: relative;
-        }
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: var(--bg-dark);
+      font-family: 'Outfit', sans-serif;
+      overflow: hidden;
+    }
 
-        /* Ambient background glow */
-        body::before {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at center, rgba(20, 22, 35, 0.85) 0%, rgba(5, 6, 10, 0.96) 100%);
-            z-index: -2;
-        }
+    /* Contenedor Principal */
+    .card-wrapper {
+      position: relative;
+      width: min(95vw, 1100px);
+      height: 650px;
+      border-radius: 20px;
+      padding: 4px;
+      overflow: hidden;
+      box-shadow: 0 0 50px rgba(255, 0, 51, 0.4), 0 20px 60px rgba(0, 0, 0, 0.9);
+    }
 
-        .showcase-container {
-            width: 100%;
-            max-width: 1200px;
-            height: 700px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            position: relative;
-            padding: 20px;
-        }
+    /* Borde Animado Neón */
+    .card-wrapper::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: conic-gradient(
+        transparent 0deg,
+        transparent 180deg,
+        #000000 220deg,
+        var(--primary-red) 270deg,
+        #ff4d6d 330deg,
+        #ffffff 360deg
+      );
+      animation: rotate-border 4s linear infinite;
+      z-index: 0;
+    }
 
-        /* Header Section with Two-Line Typography */
-        .showcase-header {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            padding: 0 40px;
-            z-index: 10;
-        }
+    @keyframes rotate-border {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
 
-        .title-group {
-            display: flex;
-            flex-direction: column;
-        }
+    .card-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 16px;
+      background: var(--bg-image) center/cover no-repeat;
+      overflow: hidden;
+      z-index: 1;
+    }
 
-        /* Line 1: Dynamic Neon Color matching selected character */
-        .title-line-1 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 2.3rem;
-            font-weight: 900;
-            letter-spacing: 2px;
-            color: var(--primary-neon);
-            text-shadow: 0 0 18px var(--primary-neon);
-            transition: color 0.4s ease, text-shadow 0.4s ease;
-            line-height: 1.1;
-        }
+    /* PARTICULAS EN CANVAS (Abarca todo el espacio) */
+    #particle-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      pointer-events: none;
+    }
 
-        /* Line 2: Strictly White */
-        .title-line-2 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.9rem;
-            letter-spacing: 4px;
-            color: #ffffff;
-            margin-top: 4px;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.8);
-        }
+    /* CORAZÓN CON CONTADOR DE LIKES (ARRIBA DERECHA) */
+    .likes-badge {
+      position: absolute;
+      top: 25px;
+      right: 35px;
+      background: var(--panel-bg);
+      border: 1px solid rgba(255, 0, 51, 0.5);
+      border-radius: 12px;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 0 20px rgba(255, 0, 51, 0.3);
+      backdrop-filter: blur(8px);
+      z-index: 10;
+    }
 
-        /* Custom Shirou Signature Badge */
-        .shirou-badge {
-            background: rgba(15, 17, 26, 0.9);
-            border: 2px solid var(--primary-neon);
-            padding: 8px 20px;
-            border-radius: 6px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            box-shadow: 0 0 15px rgba(255, 204, 0, 0.25);
-            transition: border-color 0.4s ease, box-shadow 0.4s ease;
-        }
+    .heart-icon {
+      width: 26px;
+      height: 26px;
+      fill: var(--primary-red);
+      filter: drop-shadow(0 0 8px var(--primary-red));
+      animation: pulse-heart 1.5s ease-in-out infinite;
+    }
 
-        .shirou-text {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.4rem;
-            font-weight: 900;
-            background: linear-gradient(135deg, #ff3366, #ffcc00, #00e5ff, #cc33ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 8px rgba(255, 204, 0, 0.4));
-            letter-spacing: 1px;
-            line-height: 1.1;
-        }
+    @keyframes pulse-heart {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.18); }
+    }
 
-        .shirou-id {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: #a0a5b8;
-            letter-spacing: 1.5px;
-            margin-top: 2px;
-        }
+    .likes-count {
+      font-family: 'Syncopate', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--text-white);
+      letter-spacing: 2px;
+    }
 
-        /* Carousel Stage */
-        .carousel-stage {
-            width: 100%;
-            height: 450px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            perspective: 1200px;
-        }
+    /* PERSONAJE UBICADO EN LA MISMA POSICIÓN DEL REPRODUCTOR (DETRÁS) */
+    .character-container {
+      position: absolute;
+      bottom: 0;
+      left: 10px;
+      height: 95%;
+      z-index: 4;
+      pointer-events: none;
+      display: flex;
+      align-items: flex-end;
+    }
 
-        .card-slot {
-            position: absolute;
-            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
-            cursor: pointer;
-        }
+    .character-image {
+      height: 100%;
+      object-fit: contain;
+      object-position: bottom left;
+      filter: drop-shadow(10px 10px 25px rgba(0, 0, 0, 0.8));
+    }
 
-        /* Side Cards */
-        .card-slot.side-left, .card-slot.side-right {
-            width: 240px;
-            height: 360px;
-            transform: scale(0.78) skewX(-8deg);
-            opacity: 0.5;
-            filter: brightness(0.4) grayscale(100%);
-            z-index: 2;
-            pointer-events: auto;
-        }
+    /* REPRODUCTOR DE MÚSICA */
+    .music-player {
+      position: absolute;
+      bottom: 30px;
+      left: 35px;
+      width: 330px;
+      padding: 16px 20px;
+      background: var(--panel-bg);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 0, 51, 0.45);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85), 0 0 25px rgba(255, 0, 51, 0.25);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
 
-        .card-slot.side-left { transform: translateX(-280px) scale(0.78) skewX(-8deg); }
-        .card-slot.side-right { transform: translateX(280px) scale(0.78) skewX(-8deg); }
+    .player-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
 
-        /* Center Active Card */
-        .card-slot.center {
-            width: 360px;
-            height: 440px;
-            transform: translateX(0) scale(1) skewX(0deg);
-            opacity: 1;
-            filter: brightness(1) grayscale(0%);
-            z-index: 5;
-        }
+    .album-art {
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 16px rgba(255, 0, 51, 0.6);
+      flex-shrink: 0;
+    }
 
-        /* Trapezoidal Frame with Strict Containment */
-        .card-frame {
-            width: 100%;
-            height: 100%;
-            background: rgba(12, 14, 22, 0.9);
-            border: 3px solid var(--primary-neon);
-            box-shadow: 0 0 25px rgba(0,0,0,0.8), inset 0 0 15px rgba(255,204,0,0.15);
-            position: relative;
-            overflow: hidden;
-            clip-path: polygon(15% 0%, 100% 0%, 85% 100%, 0% 100%);
-            transition: border-color 0.4s ease, box-shadow 0.4s ease;
-        }
+    .album-art svg {
+      width: 32px;
+      height: 32px;
+      fill: #ffffff;
+    }
 
-        .side-left .card-frame, .side-right .card-frame {
-            border-color: #555;
-            box-shadow: none;
-        }
+    .track-info {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
 
-        .character-img-container {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-        }
+    .track-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--text-white);
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
 
-        .character-img-container img {
-            width: 120%;
-            height: 110%;
-            object-fit: cover;
-            object-position: center bottom;
-            transition: transform 0.5s ease;
-        }
+    .track-artist {
+      font-size: 0.78rem;
+      color: rgba(255, 255, 255, 0.65);
+      margin-top: 2px;
+    }
 
-        .card-slot.center:hover img {
-            transform: scale(1.05);
-        }
+    .progress-bar-container {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
 
-        .card-overlay-info {
-            position: absolute;
-            bottom: 20px;
-            left: 0;
-            width: 100%;
-            text-align: center;
-            z-index: 6;
-            pointer-events: none;
-        }
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ff4d6d, var(--primary-red));
+      border-radius: 4px;
+    }
 
-        .card-slot.center .main-name {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: #fff;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.9);
-            letter-spacing: 2px;
-        }
+    .player-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
 
-        /* Footer & Independent Music Player with Asset Switcher */
-        .showcase-footer {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 40px;
-            z-index: 10;
-        }
+    .btn-control {
+      background: none;
+      border: none;
+      color: #ffffff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s, color 0.2s;
+    }
 
-        .music-player {
-            background: rgba(14, 16, 24, 0.95);
-            border: 2px solid var(--primary-neon);
-            border-radius: 12px;
-            padding: 10px 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: 0 0 15px rgba(255,204,0,0.2);
-            transition: border-color 0.4s ease;
-            width: 350px;
-        }
+    .btn-control:hover {
+      color: var(--primary-red);
+      transform: scale(1.12);
+    }
 
-        .track-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, var(--primary-neon), #ff6600);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-            color: #000;
-            box-shadow: 0 0 10px var(--primary-neon);
-            transition: background 0.4s ease, box-shadow 0.4s ease;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
+    .btn-play {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
+      color: #ffffff;
+      box-shadow: 0 0 14px rgba(255, 0, 51, 0.6);
+    }
 
-        .track-icon:hover {
-            transform: scale(1.08);
-        }
+    .btn-play:hover {
+      transform: scale(1.08);
+      box-shadow: 0 0 20px rgba(255, 0, 51, 0.9);
+    }
 
-        .track-info {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            overflow: hidden;
-        }
+    /* SECCIÓN DE CONTENIDO DERECHO */
+    .right-content-section {
+      position: absolute;
+      top: 22%;
+      right: 0;
+      width: 520px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 20px;
+      z-index: 6;
+    }
 
-        .track-title {
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: #fff;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+    .dynamic-title-container {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      text-align: right;
+      padding-right: 35px;
+      pointer-events: none;
+    }
 
-        .track-artist {
-            font-size: 0.7rem;
-            color: #aaa;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+    .dynamic-title {
+      font-family: 'Syncopate', sans-serif;
+      font-size: 3.8rem;
+      font-weight: 800;
+      color: var(--text-white);
+      text-transform: uppercase;
+      letter-spacing: 5px;
+      text-shadow: 0 0 20px rgba(255, 0, 51, 0.9), 4px 4px 0px #000;
+      line-height: 1.05;
+    }
 
-        .player-controls {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+    .dynamic-subtext {
+      font-family: 'Syncopate', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--primary-red);
+      letter-spacing: 8px;
+      text-transform: uppercase;
+      text-shadow: 2px 2px 0px #ffffff, 0 0 25px rgba(255, 0, 51, 1);
+      animation: glow-text 2s ease-in-out infinite alternate;
+    }
 
-        .ctrl-btn {
-            background: none;
-            border: none;
-            color: var(--primary-neon);
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: transform 0.2s ease, color 0.4s ease;
-            padding: 4px;
-        }
+    @keyframes glow-text {
+      from { filter: drop-shadow(0 0 8px var(--primary-red)); }
+      to { filter: drop-shadow(0 0 22px var(--primary-red)); }
+    }
 
-        .ctrl-btn:hover {
-            transform: scale(1.15);
-        }
+    .sub-banner-box {
+      width: 220px;
+      height: 260px;
+      border-top-left-radius: 16px;
+      border-bottom-left-radius: 16px;
+      border-top: 2px solid rgba(255, 0, 51, 0.7);
+      border-bottom: 2px solid rgba(255, 0, 51, 0.7);
+      border-left: 2px solid rgba(255, 0, 51, 0.7);
+      border-right: none;
+      overflow: hidden;
+      box-shadow: -10px 10px 30px rgba(0, 0, 0, 0.9), 0 0 20px rgba(255, 0, 51, 0.3);
+      position: relative;
+    }
 
-        .char-badge {
-            background: rgba(15, 17, 26, 0.9);
-            border: 2px solid var(--primary-neon);
-            padding: 10px 24px;
-            border-radius: 6px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            box-shadow: 0 0 12px rgba(255, 204, 0, 0.25);
-            transition: border-color 0.4s ease;
-        }
-
-        .char-badge-top {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.95rem;
-            font-weight: 900;
-            letter-spacing: 1.5px;
-            color: var(--primary-neon);
-            transition: color 0.4s ease;
-        }
-
-        .char-badge-bottom {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.75rem;
-            font-weight: 600;
-            letter-spacing: 1px;
-            color: #ffffff;
-        }
-
-        .nav-instruction {
-            position: absolute;
-            bottom: 15px;
-            right: 40px;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.75rem;
-            letter-spacing: 2px;
-            color: #666;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.4; }
-            50% { opacity: 0.9; }
-        }
-
-        .mouse-zone {
-            position: absolute;
-            top: 0;
-            height: 100%;
-            width: 25%;
-            z-index: 20;
-        }
-        .mouse-zone.left { left: 0; }
-        .mouse-zone.right { right: 0; }
-    </style>
+    .sub-banner-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+  </style>
 </head>
 <body>
 
-    <div class="mouse-zone left" id="zoneLeft"></div>
-    <div class="mouse-zone right" id="zoneRight"></div>
+  <div class="card-wrapper">
+    <main class="card-container">
 
-    <div class="showcase-container">
-        <!-- Header with Two-Line Typography & Shirou Gradient Badge -->
-        <div class="showcase-header">
-            <div class="title-group">
-                <div class="title-line-1" id="headerLine1">KYO KUSANAGI</div>
-                <div class="title-line-2">FIGHTING SHOWCASE</div>
-            </div>
-            <div class="shirou-badge" id="shirouBadge">
-                <div class="shirou-text">҂shirou</div>
-                <div class="shirou-id">(1525823861)</div>
-            </div>
+      <!-- Canvas de partículas que cubre todo el espacio -->
+      <canvas id="particle-canvas"></canvas>
+
+      <!-- Badge de Corazón con Contador Animado -->
+      <div class="likes-badge">
+        <svg class="heart-icon" viewBox="0 0 24 24">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+        <span class="likes-count" id="likes-counter">12,000</span>
+      </div>
+
+      <!-- Personaje (Ubicado detrás del reproductor) -->
+      <div class="character-container">
+        <img class="character-image" src="https://i.ibb.co/b5MLBZPH/dado.png" alt="Personaje">
+      </div>
+
+      <!-- Reproductor de Música -->
+      <div class="music-player">
+        <div class="player-header">
+          <div class="album-art">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+            </svg>
+          </div>
+          <div class="track-info">
+            <span class="track-title" id="song-title">Cargando...</span>
+            <span class="track-artist" id="song-artist">...</span>
+          </div>
         </div>
 
-        <!-- Carousel Stage -->
-        <div class="carousel-stage" id="carouselStage"></div>
-
-        <!-- Footer with Asset Music Switcher -->
-        <div class="showcase-footer">
-            <div class="music-player">
-                <div class="track-icon" id="trackIcon" title="Cambiar pista de música">♫</div>
-                <div class="track-info">
-                    <div class="track-title" id="trackTitle">酔いどれ知らず</div>
-                    <div class="track-artist" id="trackArtist">【Kanaria】</div>
-                </div>
-                <div class="player-controls">
-                    <button class="ctrl-btn" id="prevTrackBtn" title="Pista Anterior">⏮</button>
-                    <button class="ctrl-btn" id="playBtn" title="Reproducir / Pausa">▶</button>
-                    <button class="ctrl-btn" id="nextTrackBtn" title="Siguiente Pista">⏭</button>
-                </div>
-            </div>
-
-            <div class="char-badge" id="charBadge">
-                <span class="char-badge-top" id="badgeTop">KYO KUSANAGI</span>
-                <span class="char-badge-bottom">ARCADE FIGHTER</span>
-            </div>
+        <div class="progress-bar-container" id="progress-container">
+          <div class="progress-bar" id="progress-bar"></div>
         </div>
 
-        <div class="nav-instruction">◄ MOVER CURSOR A LOS EXTREMOS PARA NAVEGAR ►</div>
-    </div>
+        <div class="player-controls">
+          <button class="btn-control" id="prev-btn" title="Anterior">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+            </svg>
+          </button>
+          <button class="btn-control btn-play" id="play-btn" title="Reproducir">
+            <svg id="play-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          </button>
+          <button class="btn-control" id="next-btn" title="Siguiente">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
 
-    <!-- ========================================== -->
-    <!-- CANCIONES DEL REPRODUCTOR (assets/0 a 3)    -->
-    <!-- ========================================== -->
-    <audio src="assets/0.mp3" class="cancion active" title="酔いどれ知らず" data-artist="【Kanaria】"></audio>
-    <audio src="assets/1.mp3" class="cancion" title="Esaka!! (KOF Theme)" data-artist="【SNK Sound Team】"></audio>
-    <audio src="assets/2.mp3" class="cancion" title="Lonely Wolf" data-artist="【Garou Asset Mix】"></audio>
-    <audio src="assets/3.mp3" class="cancion" title="Arashi no Saxophone" data-artist="【Iori Theme Asset】"></audio>
+      <!-- Sección Derecha: Letras Dinámicas Grandes + Rectángulo Vertical -->
+      <div class="right-content-section">
+        <div class="dynamic-title-container">
+          <div class="dynamic-title">҂shirou</div>
+          <div class="dynamic-subtext">(1525823861)</div>
+        </div>
 
-    <!-- ========================================== -->
-    <!-- EFECTOS DE SONIDO INTERACTIVOS (A, B, C)   -->
-    <!-- ========================================== -->
-    <audio src="assets/A.mp3" class="sfx" id="sfxIntro" preload="auto"></audio>
-    <audio src="assets/B.mp3" class="sfx" id="sfxNav" preload="auto"></audio>
-    <audio src="assets/C.mp3" class="sfx" id="sfxSelect" preload="auto"></audio>
+        <!-- Imagen Rectangular Vertical en el Borde -->
+        <div class="sub-banner-box">
+          <img class="sub-banner-img" src="https://i.ibb.co/G41x4rj5/Dise-o-sin-t-tulo.png" alt="Imagen Rectangular Vertical">
+        </div>
+      </div>
 
-    <script>
-        const characters = [
-            { name: "Kyo Kusanagi", color: "#ffcc00", img: "https://i.ibb.co/K1gG66D/Dise-o-sin-t-tulo-2.png" },
-            { name: "Rugal Bernstein", color: "#00e5ff", img: "https://i.ibb.co/TBBmMtrZ/Dise-o-sin-t-tulo-3.png" },
-            { name: "Kula Diamond", color: "#ff3366", img: "https://i.ibb.co/RGwBVR6C/Dise-o-sin-t-tulo-4.png" },
-            { name: "Orochi Chris", color: "#cc33ff", img: "https://i.ibb.co/tT9TtC2v/Dise-o-sin-t-tulo-9.png" },
-            { name: "Rock Howard", color: "#00ffcc", img: "https://i.ibb.co/yc474VCs/Dise-o-sin-t-tulo-11.png" },
-            { name: "Terry Bogard", color: "#ff9900", img: "https://i.ibb.co/Q3bx92nJ/Dise-o-sin-t-tulo-7.png" },
-            { name: "Blue Mary", color: "#33ff66", img: "https://i.ibb.co/GvkJT2Cd/Dise-o-sin-t-tulo-10.png" },
-            { name: "Mai Shiranui", color: "#ff33cc", img: "https://i.ibb.co/k2WG43vk/Dise-o-sin-t-tulo-5.png" },
-            { name: "Leona Heidern", color: "#33ccff", img: "https://i.ibb.co/4wyYJXGW/Dise-o-sin-t-tulo-8.png" },
-            { name: "Iori Yagami", color: "#ff3333", img: "https://i.ibb.co/3Y9yw4z3/Dise-o-sin-t-tulo-6.png" }
-        ];
+    </main>
+  </div>
 
-        // ==========================================
-        // 1. GESTIÓN DE MÚSICA (CANCIONES)
-        // ==========================================
-        const audioTracks = document.querySelectorAll('audio.cancion');
-        let currentTrackIndex = 0;
-        let isPlaying = false;
+  <script>
+    /* 1. CONTADOR ANIMADO DEL CORAZÓN (Incrementos de 12,000 a 12,100+) */
+    let likesCount = 12000;
+    const likesElement = document.getElementById('likes-counter');
 
-        const playBtn = document.getElementById('playBtn');
-        const prevTrackBtn = document.getElementById('prevTrackBtn');
-        const nextTrackBtn = document.getElementById('nextTrackBtn');
-        const trackTitleEl = document.getElementById('trackTitle');
-        const trackArtistEl = document.getElementById('trackArtist');
+    function updateLikes() {
+      likesCount += Math.floor(Math.random() * 15) + 5;
+      likesElement.textContent = likesCount.toLocaleString('en-US');
+    }
+    setInterval(updateLikes, 2500);
 
-        function loadTrack(index) {
-            audioTracks.forEach(audio => {
-                audio.pause();
-                audio.currentTime = 0;
-                audio.classList.remove('active');
-            });
+    /* 2. PARTÍCULAS EN MOVIMIENTO COMPLETO */
+    const canvas = document.getElementById('particle-canvas');
+    const ctx = canvas.getContext('2d');
 
-            currentTrackIndex = index;
-            const currentAudio = audioTracks[currentTrackIndex];
-            currentAudio.classList.add('active');
+    function resizeCanvas() {
+      const container = document.querySelector('.card-container');
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
 
-            trackTitleEl.textContent = currentAudio.getAttribute('title') || 'Pista sin título';
-            trackArtistEl.textContent = currentAudio.getAttribute('data-artist') || '【Asset】';
+    // Se generan 50 partículas distribuidas por TODO el tamaño del lienzo
+    const particles = Array.from({ length: 50 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      radius: Math.random() * 2.5 + 1,
+      speedY: Math.random() * 0.8 + 0.3,
+      speedX: (Math.random() - 0.5) * 0.5,
+      color: Math.random() > 0.4 ? '#ff0033' : '#ffffff',
+      alpha: Math.random() * 0.7 + 0.3
+    }));
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.y += p.speedY;
+        p.x += p.speedX;
+
+        // Si sale por la parte inferior, reaparece arriba del todo
+        if (p.y > canvas.height + 10) {
+          p.y = -10;
+          p.x = Math.random() * canvas.width;
         }
 
-        loadTrack(0);
+        // Si sale por los lados, reaparece en el borde opuesto
+        if (p.x > canvas.width) p.x = 0;
+        if (p.x < 0) p.x = canvas.width;
 
-        playBtn.addEventListener('click', () => {
-            const currentAudio = audioTracks[currentTrackIndex];
-            if (isPlaying) {
-                currentAudio.pause();
-                playBtn.textContent = '▶';
-                isPlaying = false;
-            } else {
-                currentAudio.play().then(() => {
-                    playBtn.textContent = '❚❚';
-                    isPlaying = true;
-                }).catch(e => console.log(e));
-            }
-        });
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.alpha;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = p.color;
+        ctx.fill();
+      });
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
 
-        function nextTrack() {
-            const wasPlaying = isPlaying;
-            audioTracks[currentTrackIndex].pause();
-            audioTracks[currentTrackIndex].currentTime = 0;
-            
-            currentTrackIndex = (currentTrackIndex + 1) % audioTracks.length;
-            loadTrack(currentTrackIndex);
-            
-            if (wasPlaying) {
-                audioTracks[currentTrackIndex].play().catch(e => {});
-                playBtn.textContent = '❚❚';
-                isPlaying = true;
-            }
-        }
+    /* 3. REPRODUCTOR DE MÚSICA */
+    const playlist = [
+      {
+        title: "酔いどれ知らず",
+        artist: "【Kanaria】",
+        src: "assets/0.mp3"
+      },
+      {
+        title: "BLEACH",
+        artist: "Romaji",
+        src: "assets/1.mp3"
+      }
+    ];
 
-        prevTrackBtn.addEventListener('click', () => {
-            const wasPlaying = isPlaying;
-            audioTracks[currentTrackIndex].pause();
-            audioTracks[currentTrackIndex].currentTime = 0;
-            
-            currentTrackIndex = (currentTrackIndex - 1 + audioTracks.length) % audioTracks.length;
-            loadTrack(currentTrackIndex);
-            
-            if (wasPlaying) {
-                audioTracks[currentTrackIndex].play().catch(e => {});
-                playBtn.textContent = '❚❚';
-                isPlaying = true;
-            }
-        });
+    let currentTrack = 0;
+    let isPlaying = false;
 
-        nextTrackBtn.addEventListener('click', nextTrack);
-        document.getElementById('trackIcon').addEventListener('click', nextTrack);
+    const audio = new Audio();
 
+    const playBtn = document.getElementById('play-btn');
+    const playIcon = document.getElementById('play-icon');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const titleEl = document.getElementById('song-title');
+    const artistEl = document.getElementById('song-artist');
+    const progressBar = document.getElementById('progress-bar');
+    const progressContainer = document.getElementById('progress-container');
 
-        // ==========================================
-        // 2. EFECTOS DE SONIDO (A.mp3, B.mp3, C.mp3)
-        // ==========================================
-        const sfxIntro = document.getElementById('sfxIntro');
-        const sfxNav = document.getElementById('sfxNav');
-        const sfxSelect = document.getElementById('sfxSelect');
+    function loadTrack(index) {
+      currentTrack = index;
+      titleEl.textContent = playlist[currentTrack].title;
+      artistEl.textContent = playlist[currentTrack].artist;
+      audio.src = playlist[currentTrack].src;
+    }
 
-        function playSfx(audioElement) {
-            if (!audioElement) return;
-            audioElement.currentTime = 0;
-            audioElement.play().catch(e => {
-                console.log("SFX autoplay bloqueado hasta interacción:", e);
-            });
-        }
+    function playTrack() {
+      isPlaying = true;
+      playIcon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+      audio.play().catch(err => {
+        console.warn("Autoplay o carga bloqueada:", err);
+      });
+    }
 
-        function playStartupSequence() {
-            playSfx(sfxIntro);
-        }
+    function pauseTrack() {
+      isPlaying = false;
+      playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+      audio.pause();
+    }
 
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                playStartupSequence();
-            }, 300);
-        });
+    playBtn.addEventListener('click', () => {
+      if (isPlaying) pauseTrack();
+      else playTrack();
+    });
 
-        function playNavigationSound() {
-            playSfx(sfxNav);
-        }
+    prevBtn.addEventListener('click', () => {
+      currentTrack = (currentTrack - 1 + playlist.length) % playlist.length;
+      loadTrack(currentTrack);
+      if (isPlaying) playTrack();
+    });
 
-        function playSelectConfirmSound() {
-            playSfx(sfxSelect);
-        }
+    nextBtn.addEventListener('click', () => {
+      currentTrack = (currentTrack + 1) % playlist.length;
+      loadTrack(currentTrack);
+      if (isPlaying) playTrack();
+    });
 
+    audio.addEventListener('timeupdate', () => {
+      if (audio.duration) {
+        const pct = (audio.currentTime / audio.duration) * 100;
+        progressBar.style.width = pct + '%';
+      }
+    });
 
-        // ==========================================
-        // 3. RENDERIZADO Y NAVEGACIÓN DEL CARRUSEL
-        // ==========================================
-        let currentIndex = 0;
-        let lastNavTime = 0;
-        const navCooldown = 650;
+    audio.addEventListener('ended', () => {
+      nextBtn.click();
+    });
 
-        const stage = document.getElementById('carouselStage');
-        const headerLine1 = document.getElementById('headerLine1');
-        const badgeTop = document.getElementById('badgeTop');
+    progressContainer.addEventListener('click', (e) => {
+      const width = progressContainer.clientWidth;
+      const clickX = e.offsetX;
+      if (audio.duration) {
+        audio.currentTime = (clickX / width) * audio.duration;
+      }
+    });
 
-        function updateTheme(color) {
-            document.documentElement.style.setProperty('--primary-neon', color);
-        }
-
-        function renderCarousel() {
-            stage.innerHTML = '';
-            const char = characters[currentIndex];
-            
-            headerLine1.textContent = char.name;
-            badgeTop.textContent = char.name;
-            updateTheme(char.color);
-
-            const prevIndex = (currentIndex - 1 + characters.length) % characters.length;
-            const nextIndex = (currentIndex + 1) % characters.length;
-
-            const indicesToShow = [
-                { idx: prevIndex, pos: 'side-left' },
-                { idx: currentIndex, pos: 'center' },
-                { idx: nextIndex, pos: 'side-right' }
-            ];
-
-            indicesToShow.forEach(item => {
-                const c = characters[item.idx];
-                const slot = document.createElement('div');
-                slot.className = `card-slot ${item.pos}`;
-                slot.innerHTML = `
-                    <div class="card-frame">
-                        <div class="character-img-container">
-                            <img src="${c.img}" alt="${c.name}" onerror="this.src='https://placehold.co/400x600/0b0f19/ffffff?text=${encodeURIComponent(c.name)}'">
-                        </div>
-                        ${item.pos === 'center' ? `<div class="card-overlay-info"><div class="main-name">${c.name}</div></div>` : ''}
-                    </div>
-                `;
-                slot.addEventListener('click', () => {
-                    if (item.pos === 'center') {
-                        playSelectConfirmSound();
-                    } else {
-                        currentIndex = item.idx;
-                        playNavigationSound();
-                        renderCarousel();
-                    }
-                });
-                stage.appendChild(slot);
-            });
-        }
-
-        function navigate(direction) {
-            const now = Date.now();
-            if (now - lastNavTime < navCooldown) return;
-            lastNavTime = now;
-
-            if (direction === 'next') {
-                currentIndex = (currentIndex + 1) % characters.length;
-            } else {
-                currentIndex = (currentIndex - 1 + characters.length) % characters.length;
-            }
-            playNavigationSound();
-            renderCarousel();
-        }
-
-        document.getElementById('zoneLeft').addEventListener('mouseenter', () => navigate('prev'));
-        document.getElementById('zoneRight').addEventListener('mouseenter', () => navigate('next'));
-
-        renderCarousel();
-    </script>
+    loadTrack(0);
+  </script>
 </body>
 </html>
