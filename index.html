@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Perfil Interactivo - Redesign</title>
+  <title>Perfil Interactivo - Redesign & Effects</title>
   <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@700;800&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
     * {
@@ -139,11 +139,47 @@
       align-items: flex-end;
     }
 
+    /* EFECTO GLITCH ROJO Y NEGRO EN EL PERSONAJE CADA 5 SEGUNDOS */
     .character-image {
       height: 100%;
       object-fit: contain;
       object-position: bottom left;
       filter: drop-shadow(10px 10px 25px rgba(0, 0, 0, 0.8));
+      animation: glitch-cycle 5s infinite;
+      position: relative;
+    }
+
+    @keyframes glitch-cycle {
+      0%, 92%, 100% {
+        transform: translate(0, 0) skew(0deg);
+        filter: drop-shadow(10px 10px 25px rgba(0, 0, 0, 0.8));
+        clip-path: inset(0 0 0 0);
+      }
+      93% {
+        transform: translate(-8px, 4px) skew(3deg);
+        filter: drop-shadow(-10px 0 15px #ff0033) contrast(180%) brightness(0.7);
+        clip-path: inset(10% 0 35% 0);
+      }
+      94% {
+        transform: translate(10px, -4px) skew(-4deg);
+        filter: drop-shadow(10px 0 20px #000000) contrast(200%) invert(10%);
+        clip-path: inset(40% 0 10% 0);
+      }
+      95% {
+        transform: translate(-5px, 2px) skew(2deg);
+        filter: drop-shadow(-15px 5px 25px #ff0033) saturate(300%);
+        clip-path: inset(25% 0 50% 0);
+      }
+      96% {
+        transform: translate(6px, -2px) skew(-2deg);
+        filter: drop-shadow(5px -5px 15px #000000) contrast(150%);
+        clip-path: inset(70% 0 5% 0);
+      }
+      97% {
+        transform: translate(0, 0) skew(0deg);
+        filter: drop-shadow(10px 10px 25px rgba(0, 0, 0, 0.8));
+        clip-path: inset(0 0 0 0);
+      }
     }
 
     /* REPRODUCTOR DE MÚSICA */
@@ -285,33 +321,46 @@
       pointer-events: none;
     }
 
+    /* DEGRADADO EN MOVIMIENTO PARA TÍTULO Y SUBTEXTO */
     .dynamic-title {
       font-family: 'Syncopate', sans-serif;
       font-size: 3.8rem;
       font-weight: 800;
-      color: var(--text-white);
       text-transform: uppercase;
       letter-spacing: 5px;
-      text-shadow: 0 0 20px rgba(255, 0, 51, 0.9), 4px 4px 0px #000;
       line-height: 1.05;
+
+      /* Gradient properties */
+      background: linear-gradient(90deg, #ffffff, #ff0033, #ff758c, #ffffff, #800016, #ff0033);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: move-gradient 3s linear infinite;
+      filter: drop-shadow(0 0 15px rgba(255, 0, 51, 0.8));
     }
 
     .dynamic-subtext {
       font-family: 'Syncopate', sans-serif;
-      font-size: 2.5rem;
+      font-size: 2.2rem;
       font-weight: 800;
-      color: var(--primary-red);
-      letter-spacing: 8px;
+      letter-spacing: 6px;
       text-transform: uppercase;
-      text-shadow: 2px 2px 0px #ffffff, 0 0 25px rgba(255, 0, 51, 1);
-      animation: glow-text 2s ease-in-out infinite alternate;
+
+      /* Gradient properties */
+      background: linear-gradient(90deg, #ff0033, #ffffff, #ff4d6d, #800016, #ff0033);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: move-gradient 4s linear infinite reverse;
+      filter: drop-shadow(0 0 12px rgba(255, 0, 51, 0.9));
     }
 
-    @keyframes glow-text {
-      from { filter: drop-shadow(0 0 8px var(--primary-red)); }
-      to { filter: drop-shadow(0 0 22px var(--primary-red)); }
+    @keyframes move-gradient {
+      0% { background-position: 0% center; }
+      100% { background-position: 200% center; }
     }
 
+    /* RECTÁNGULO VERTICAL AL LADO DERECHO CON HOVER BLANCO Y NEGRO Y DIFUMINADO */
     .sub-banner-box {
       width: 220px;
       height: 260px;
@@ -324,6 +373,7 @@
       overflow: hidden;
       box-shadow: -10px 10px 30px rgba(0, 0, 0, 0.9), 0 0 20px rgba(255, 0, 51, 0.3);
       position: relative;
+      cursor: pointer;
     }
 
     .sub-banner-img {
@@ -331,6 +381,14 @@
       height: 100%;
       object-fit: cover;
       object-position: center;
+      transition: filter 0.4s ease, transform 0.4s ease;
+      filter: grayscale(0%) blur(0px);
+    }
+
+    /* HOVER EFFECT: Grayscale & Blur */
+    .sub-banner-box:hover .sub-banner-img {
+      filter: grayscale(100%) blur(3px) contrast(120%);
+      transform: scale(1.05);
     }
   </style>
 </head>
@@ -350,7 +408,7 @@
         <span class="likes-count" id="likes-counter">12,000</span>
       </div>
 
-      <!-- Personaje (Ubicado detrás del reproductor) -->
+      <!-- Personaje con Efecto Glitch cada 5s -->
       <div class="character-container">
         <img class="character-image" src="https://i.ibb.co/b5MLBZPH/dado.png" alt="Personaje">
       </div>
@@ -392,14 +450,14 @@
         </div>
       </div>
 
-      <!-- Sección Derecha: Letras Dinámicas Grandes + Rectángulo Vertical -->
+      <!-- Sección Derecha: Letras Dinámicas con Degradado en Movimiento + Rectángulo Vertical -->
       <div class="right-content-section">
         <div class="dynamic-title-container">
           <div class="dynamic-title">҂shirou</div>
           <div class="dynamic-subtext">(1525823861)</div>
         </div>
 
-        <!-- Imagen Rectangular Vertical en el Borde -->
+        <!-- Imagen Rectangular Vertical con Hover Efecto B&N + Blur -->
         <div class="sub-banner-box">
           <img class="sub-banner-img" src="https://i.ibb.co/G41x4rj5/Dise-o-sin-t-tulo.png" alt="Imagen Rectangular Vertical">
         </div>
