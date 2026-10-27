@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive KOF Fighting Game Showcase</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-neon: #ffcc00;
+            --bg-dark: #0a0b10;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Ambient background glow */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(20, 22, 35, 0.85) 0%, rgba(5, 6, 10, 0.96) 100%);
+            z-index: -2;
+        }
+
+        .showcase-container {
+            width: 100%;
+            max-width: 1200px;
+            height: 700px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            padding: 20px;
+        }
+
+        /* Header Section with Two-Line Typography */
+        .showcase-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 0 40px;
+            z-index: 10;
+        }
+
+        .title-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Line 1: Dynamic Neon Color matching selected character */
+        .title-line-1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.3rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: var(--primary-neon);
+            text-shadow: 0 0 18px var(--primary-neon);
+            transition: color 0.4s ease, text-shadow 0.4s ease;
+            line-height: 1.1;
+        }
+
+        /* Line 2: Strictly White */
+        .title-line-2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            letter-spacing: 4px;
+            color: #ffffff;
+            margin-top: 4px;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.8);
+        }
+
+        /* Custom Shirou Signature Badge */
+        .shirou-badge {
+            background: rgba(15, 17, 26, 0.9);
+            border: 2px solid var(--primary-neon);
+            padding: 8px 20px;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.25);
+            transition: border-color 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        .shirou-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ff3366, #ffcc00, #00e5ff, #cc33ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 8px rgba(255, 204, 0, 0.4));
+            letter-spacing: 1px;
+            line-height: 1.1;
+        }
+
+        .shirou-id {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #a0a5b8;
+            letter-spacing: 1.5px;
+            margin-top: 2px;
+        }
+
+        /* Carousel Stage */
+        .carousel-stage {
+            width: 100%;
+            height: 450px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            perspective: 1200px;
+        }
+
+        .card-slot {
+            position: absolute;
+            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            cursor: pointer;
+        }
+
+        /* Side Cards */
+        .card-slot.side-left, .card-slot.side-right {
+            width: 240px;
+            height: 360px;
+            transform: scale(0.78) skewX(-8deg);
+            opacity: 0.5;
+            filter: brightness(0.4) grayscale(100%);
+            z-index: 2;
+            pointer-events: auto;
+        }
+
+        .card-slot.side-left { transform: translateX(-280px) scale(0.78) skewX(-8deg); }
+        .card-slot.side-right { transform: translateX(280px) scale(0.78) skewX(-8deg); }
+
+        /* Center Active Card */
+        .card-slot.center {
+            width: 360px;
+            height: 440px;
+            transform: translateX(0) scale(1) skewX(0deg);
+            opacity: 1;
+            filter: brightness(1) grayscale(0%);
+            z-index: 5;
+        }
+
+        /* Trapezoidal Frame with Strict Containment */
+        .card-frame {
+            width: 100%;
+            height: 100%;
+            background: rgba(12, 14, 22, 0.9);
+            border: 3px solid var(--primary-neon);
+            box-shadow: 0 0 25px rgba(0,0,0,0.8), inset 0 0 15px rgba(255,204,0,0.15);
+            position: relative;
+            overflow: hidden;
+            clip-path: polygon(15% 0%, 100% 0%, 85% 100%, 0% 100%);
+            transition: border-color 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        .side-left .card-frame, .side-right .card-frame {
+            border-color: #555;
+            box-shadow: none;
+        }
+
+        .character-img-container {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .character-img-container img {
+            width: 120%;
+            height: 110%;
+            object-fit: cover;
+            object-position: center bottom;
+            transition: transform 0.5s ease;
+        }
+
+        .card-slot.center:hover img {
+            transform: scale(1.05);
+        }
+
+        .card-overlay-info {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            z-index: 6;
+            pointer-events: none;
+        }
+
+        .card-slot.center .main-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #fff;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+            letter-spacing: 2px;
+        }
+
+        /* Footer & Independent Music Player with Asset Switcher */
+        .showcase-footer {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            z-index: 10;
+        }
+
+        .music-player {
+            background: rgba(14, 16, 24, 0.95);
+            border: 2px solid var(--primary-neon);
+            border-radius: 12px;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 0 15px rgba(255,204,0,0.2);
+            transition: border-color 0.4s ease;
+            width: 350px;
+        }
+
+        .track-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary-neon), #ff6600);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: #000;
+            box-shadow: 0 0 10px var(--primary-neon);
+            transition: background 0.4s ease, box-shadow 0.4s ease;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .track-icon:hover {
+            transform: scale(1.08);
+        }
+
+        .track-info {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            overflow: hidden;
+        }
+
+        .track-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .track-artist {
+            font-size: 0.7rem;
+            color: #aaa;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .player-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ctrl-btn {
+            background: none;
+            border: none;
+            color: var(--primary-neon);
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: transform 0.2s ease, color 0.4s ease;
+            padding: 4px;
+        }
+
+        .ctrl-btn:hover {
+            transform: scale(1.15);
+        }
+
+        .char-badge {
+            background: rgba(15, 17, 26, 0.9);
+            border: 2px solid var(--primary-neon);
+            padding: 10px 24px;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            box-shadow: 0 0 12px rgba(255, 204, 0, 0.25);
+            transition: border-color 0.4s ease;
+        }
+
+        .char-badge-top {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 900;
+            letter-spacing: 1.5px;
+            color: var(--primary-neon);
+            transition: color 0.4s ease;
+        }
+
+        .char-badge-bottom {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: #ffffff;
+        }
+
+        .nav-instruction {
+            position: absolute;
+            bottom: 15px;
+            right: 40px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            color: #666;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.9; }
+        }
+
+        .mouse-zone {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            width: 25%;
+            z-index: 20;
+        }
+        .mouse-zone.left { left: 0; }
+        .mouse-zone.right { right: 0; }
+    </style>
+</head>
+<body>
+
+    <div class="mouse-zone left" id="zoneLeft"></div>
+    <div class="mouse-zone right" id="zoneRight"></div>
+
+    <div class="showcase-container">
+        <!-- Header with Two-Line Typography & Shirou Gradient Badge -->
+        <div class="showcase-header">
+            <div class="title-group">
+                <div class="title-line-1" id="headerLine1">KYO KUSANAGI</div>
+                <div class="title-line-2">FIGHTING SHOWCASE</div>
+            </div>
+            <div class="shirou-badge" id="shirouBadge">
+                <div class="shirou-text">҂shirou</div>
+                <div class="shirou-id">(1525823861)</div>
+            </div>
+        </div>
+
+        <!-- Carousel Stage -->
+        <div class="carousel-stage" id="carouselStage"></div>
+
+        <!-- Footer with Asset Music Switcher -->
+        <div class="showcase-footer">
+            <div class="music-player">
+                <div class="track-icon" id="trackIcon" title="Cambiar pista de música">♫</div>
+                <div class="track-info">
+                    <div class="track-title" id="trackTitle">酔いどれ知らず</div>
+                    <div class="track-artist" id="trackArtist">【Kanaria】</div>
+                </div>
+                <div class="player-controls">
+                    <button class="ctrl-btn" id="prevTrackBtn" title="Pista Anterior">⏮</button>
+                    <button class="ctrl-btn" id="playBtn" title="Reproducir / Pausa">▶</button>
+                    <button class="ctrl-btn" id="nextTrackBtn" title="Siguiente Pista">⏭</button>
+                </div>
+            </div>
+
+            <div class="char-badge" id="charBadge">
+                <span class="char-badge-top" id="badgeTop">KYO KUSANAGI</span>
+                <span class="char-badge-bottom">ARCADE FIGHTER</span>
+            </div>
+        </div>
+
+        <div class="nav-instruction">◄ MOVER CURSOR A LOS EXTREMOS PARA NAVEGAR ►</div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- CANCIONES DEL REPRODUCTOR (assets/0 a 3)    -->
+    <!-- ========================================== -->
+    <audio src="assets/0.mp3" class="cancion active" title="酔いどれ知らず" data-artist="【Kanaria】"></audio>
+    <audio src="assets/1.mp3" class="cancion" title="Esaka!! (KOF Theme)" data-artist="【SNK Sound Team】"></audio>
+    <audio src="assets/2.mp3" class="cancion" title="Lonely Wolf" data-artist="【Garou Asset Mix】"></audio>
+    <audio src="assets/3.mp3" class="cancion" title="Arashi no Saxophone" data-artist="【Iori Theme Asset】"></audio>
+
+    <!-- ========================================== -->
+    <!-- EFECTOS DE SONIDO INTERACTIVOS (A, B, C)   -->
+    <!-- ========================================== -->
+    <audio src="assets/A.mp3" class="sfx" id="sfxIntro" preload="auto"></audio>
+    <audio src="assets/B.mp3" class="sfx" id="sfxNav" preload="auto"></audio>
+    <audio src="assets/C.mp3" class="sfx" id="sfxSelect" preload="auto"></audio>
+
+    <script>
+        const characters = [
+            { name: "Kyo Kusanagi", color: "#ffcc00", img: "https://i.ibb.co/K1gG66D/Dise-o-sin-t-tulo-2.png" },
+            { name: "Rugal Bernstein", color: "#00e5ff", img: "https://i.ibb.co/TBBmMtrZ/Dise-o-sin-t-tulo-3.png" },
+            { name: "Kula Diamond", color: "#ff3366", img: "https://i.ibb.co/RGwBVR6C/Dise-o-sin-t-tulo-4.png" },
+            { name: "Orochi Chris", color: "#cc33ff", img: "https://i.ibb.co/tT9TtC2v/Dise-o-sin-t-tulo-9.png" },
+            { name: "Rock Howard", color: "#00ffcc", img: "https://i.ibb.co/yc474VCs/Dise-o-sin-t-tulo-11.png" },
+            { name: "Terry Bogard", color: "#ff9900", img: "https://i.ibb.co/Q3bx92nJ/Dise-o-sin-t-tulo-7.png" },
+            { name: "Blue Mary", color: "#33ff66", img: "https://i.ibb.co/GvkJT2Cd/Dise-o-sin-t-tulo-10.png" },
+            { name: "Mai Shiranui", color: "#ff33cc", img: "https://i.ibb.co/k2WG43vk/Dise-o-sin-t-tulo-5.png" },
+            { name: "Leona Heidern", color: "#33ccff", img: "https://i.ibb.co/4wyYJXGW/Dise-o-sin-t-tulo-8.png" },
+            { name: "Iori Yagami", color: "#ff3333", img: "https://i.ibb.co/3Y9yw4z3/Dise-o-sin-t-tulo-6.png" }
+        ];
+
+        // ==========================================
+        // 1. GESTIÓN DE MÚSICA (CANCIONES)
+        // ==========================================
+        const audioTracks = document.querySelectorAll('audio.cancion');
+        let currentTrackIndex = 0;
+        let isPlaying = false;
+
+        const playBtn = document.getElementById('playBtn');
+        const prevTrackBtn = document.getElementById('prevTrackBtn');
+        const nextTrackBtn = document.getElementById('nextTrackBtn');
+        const trackTitleEl = document.getElementById('trackTitle');
+        const trackArtistEl = document.getElementById('trackArtist');
+
+        function loadTrack(index) {
+            audioTracks.forEach(audio => {
+                audio.pause();
+                audio.currentTime = 0;
+                audio.classList.remove('active');
+            });
+
+            currentTrackIndex = index;
+            const currentAudio = audioTracks[currentTrackIndex];
+            currentAudio.classList.add('active');
+
+            trackTitleEl.textContent = currentAudio.getAttribute('title') || 'Pista sin título';
+            trackArtistEl.textContent = currentAudio.getAttribute('data-artist') || '【Asset】';
+        }
+
+        loadTrack(0);
+
+        playBtn.addEventListener('click', () => {
+            const currentAudio = audioTracks[currentTrackIndex];
+            if (isPlaying) {
+                currentAudio.pause();
+                playBtn.textContent = '▶';
+                isPlaying = false;
+            } else {
+                currentAudio.play().then(() => {
+                    playBtn.textContent = '❚❚';
+                    isPlaying = true;
+                }).catch(e => console.log(e));
+            }
+        });
+
+        function nextTrack() {
+            const wasPlaying = isPlaying;
+            audioTracks[currentTrackIndex].pause();
+            audioTracks[currentTrackIndex].currentTime = 0;
+            
+            currentTrackIndex = (currentTrackIndex + 1) % audioTracks.length;
+            loadTrack(currentTrackIndex);
+            
+            if (wasPlaying) {
+                audioTracks[currentTrackIndex].play().catch(e => {});
+                playBtn.textContent = '❚❚';
+                isPlaying = true;
+            }
+        }
+
+        prevTrackBtn.addEventListener('click', () => {
+            const wasPlaying = isPlaying;
+            audioTracks[currentTrackIndex].pause();
+            audioTracks[currentTrackIndex].currentTime = 0;
+            
+            currentTrackIndex = (currentTrackIndex - 1 + audioTracks.length) % audioTracks.length;
+            loadTrack(currentTrackIndex);
+            
+            if (wasPlaying) {
+                audioTracks[currentTrackIndex].play().catch(e => {});
+                playBtn.textContent = '❚❚';
+                isPlaying = true;
+            }
+        });
+
+        nextTrackBtn.addEventListener('click', nextTrack);
+        document.getElementById('trackIcon').addEventListener('click', nextTrack);
+
+
+        // ==========================================
+        // 2. EFECTOS DE SONIDO (A.mp3, B.mp3, C.mp3)
+        // ==========================================
+        const sfxIntro = document.getElementById('sfxIntro');
+        const sfxNav = document.getElementById('sfxNav');
+        const sfxSelect = document.getElementById('sfxSelect');
+
+        function playSfx(audioElement) {
+            if (!audioElement) return;
+            audioElement.currentTime = 0;
+            audioElement.play().catch(e => {
+                console.log("SFX autoplay bloqueado hasta interacción:", e);
+            });
+        }
+
+        function playStartupSequence() {
+            playSfx(sfxIntro);
+        }
+
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                playStartupSequence();
+            }, 300);
+        });
+
+        function playNavigationSound() {
+            playSfx(sfxNav);
+        }
+
+        function playSelectConfirmSound() {
+            playSfx(sfxSelect);
+        }
+
+
+        // ==========================================
+        // 3. RENDERIZADO Y NAVEGACIÓN DEL CARRUSEL
+        // ==========================================
+        let currentIndex = 0;
+        let lastNavTime = 0;
+        const navCooldown = 650;
+
+        const stage = document.getElementById('carouselStage');
+        const headerLine1 = document.getElementById('headerLine1');
+        const badgeTop = document.getElementById('badgeTop');
+
+        function updateTheme(color) {
+            document.documentElement.style.setProperty('--primary-neon', color);
+        }
+
+        function renderCarousel() {
+            stage.innerHTML = '';
+            const char = characters[currentIndex];
+            
+            headerLine1.textContent = char.name;
+            badgeTop.textContent = char.name;
+            updateTheme(char.color);
+
+            const prevIndex = (currentIndex - 1 + characters.length) % characters.length;
+            const nextIndex = (currentIndex + 1) % characters.length;
+
+            const indicesToShow = [
+                { idx: prevIndex, pos: 'side-left' },
+                { idx: currentIndex, pos: 'center' },
+                { idx: nextIndex, pos: 'side-right' }
+            ];
+
+            indicesToShow.forEach(item => {
+                const c = characters[item.idx];
+                const slot = document.createElement('div');
+                slot.className = `card-slot ${item.pos}`;
+                slot.innerHTML = `
+                    <div class="card-frame">
+                        <div class="character-img-container">
+                            <img src="${c.img}" alt="${c.name}" onerror="this.src='https://placehold.co/400x600/0b0f19/ffffff?text=${encodeURIComponent(c.name)}'">
+                        </div>
+                        ${item.pos === 'center' ? `<div class="card-overlay-info"><div class="main-name">${c.name}</div></div>` : ''}
+                    </div>
+                `;
+                slot.addEventListener('click', () => {
+                    if (item.pos === 'center') {
+                        playSelectConfirmSound();
+                    } else {
+                        currentIndex = item.idx;
+                        playNavigationSound();
+                        renderCarousel();
+                    }
+                });
+                stage.appendChild(slot);
+            });
+        }
+
+        function navigate(direction) {
+            const now = Date.now();
+            if (now - lastNavTime < navCooldown) return;
+            lastNavTime = now;
+
+            if (direction === 'next') {
+                currentIndex = (currentIndex + 1) % characters.length;
+            } else {
+                currentIndex = (currentIndex - 1 + characters.length) % characters.length;
+            }
+            playNavigationSound();
+            renderCarousel();
+        }
+
+        document.getElementById('zoneLeft').addEventListener('mouseenter', () => navigate('prev'));
+        document.getElementById('zoneRight').addEventListener('mouseenter', () => navigate('next'));
+
+        renderCarousel();
+    </script>
+</body>
+</html>
